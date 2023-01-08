@@ -1,0 +1,170 @@
+import time # Allows machine to rest whenever needed.
+
+inpt = {"credit" : 0, "purchase_times": 0} # Container for user input
+suggest = {}
+
+def items_list(): # LIST OF ITEMS AVAILABLE ON THE MACHINE
+    print("\n**************************************************\n")
+    global items_info
+    items_info = { 
+        # dictionary = {'Product Code':['Price', 'Product Details', 'Separator', 'Currency in Use']}
+        'Notebooks & Sketchpads': ['','','',''], # Category 1
+        'A01': [12.00, 'A5 Notebook (148 x 210 mm)','|','DHS ||'],
+        'A02': [15.00, 'A4 Notebook (210 x 297 mm)','|','DHS ||'],
+        'A03': [10.00, 'Pocket Notebook (90 x 140 mm)','|','DHS ||'],
+        'A04': [35.50, 'Travel Sketchbook (127 x 203 mm)','|','DHS ||'],
+        'A05': [40.90, 'Watercolor Sketchbook 200 gsm (127 x 203 mm)','|','DHS ||'],
+        '\nDrawing Tools': ['','','',''], # Category 2
+        'B06': [10.00, '15pc HB Pencil Pack','|','DHS ||'],
+        'B07': [35.00, '6 pc Graphite Pencil Set','|','DHS ||'],
+        'B08': [15.00, '0.5mm Mechanical Pencil and Lead Set','|','DHS ||'],
+        'B09': [10.00, '3 pc Kneadable Eraser Pack','|','DHS ||'],
+        'B10': [10.00, '15 pc Plastic Eraser','|','DHS ||'], 
+        '\nOthers': ['','','',''], # Category 3
+        'C11': [20.00,'Canvas Tote Bag','|','DHS ||'],
+        'C12': [15.00,'Large Pencil Case','|','DHS ||'],
+        'C13': [30.00,'6 pc Water Color Brush Pen Set','|','DHS ||'],
+        'C14': [50.00,'Travel Watercolor Paint (12Paint Pans)','|','DHS ||'],
+        'C15': [10.00,'20 pc 0.7mm Ballpoint Pens (Blue)','|','DHS ||']}
+    for code, prod_price in items_info.items(): # Iterates through the items_info dictionary
+        print(code ,prod_price[2], prod_price[0], prod_price[3], prod_price[1])
+    print("\n**************************************************\n")
+
+
+def suggestions(): # Will only appear in case users still have 10 dhs on the the machine
+    if inpt['credit'] < 12:
+        ten = {code:prod_price for code,prod_price in items_info.items() if prod_price[0] == 10}
+        print("\n--------------------------------------------------")
+        print("\nTHERE ARE STILL PLENTY OF ITEMS YOU CAN BUY WITH YOUR 10 DHS\n\nWE SUGGEST THE FOLLOWING: ")
+        suggest = ten
+        for k,v in suggest.items():
+            print(k, v[2],v[0],v[3],v[1])
+
+
+welcome_instructions = '''
+Welcome and Thank you for using ART BOX
+
+ART BOX gives you the chance to get your hands on, high qua-
+lity and branded art materials even while you're on the go.
+
+STEPS TO PURCHASE:
+1. SEE PRODUCT'S CORRESPONDING CODE 
+2. INSERT CASH
+3. ENTER THE PRODUCT'S CODE
+4. COLLECT PURCHASED PRODUCT
+5. MAKE ANOTHER PURCHASE or COLLECT CHANGE
+    - IF YOUR CHANGE IS STILL ENOUGH 
+      TO MAKE ANOTHER PURCHASE
+
+REMEMBER:
+    ALWAYS READ INSTRUCTIONS CAREFULLY
+    TO AVOID ENTERING INVALID KEYS'''
+    
+
+print(welcome_instructions)
+time.sleep(10) # Interval(in Seconds) before list of items is displayed.
+items_list()
+
+def venMa_system(): # Main Function that runs the vending machine system
+ 
+  amount_credited = float(input("\nENTER AMOUNT: ")) # Prompts user to enter amount to credit to machine.
+  inpt['credit'] = amount_credited
+
+  # Prompts user to enter the code that corresponds to the product/item they want to purchase.
+  # It then fetches the price of the product and subtracts it to the amount given by the user.
+  def purchase_process():
+    
+    if inpt["purchase_times"] > 0: # Will only run after the first purchase
+      items_list() 
+      print("\nCurrent Amount: ", inpt["credit"])  # Displays the remaining amount inside the machine.
+    
+    # This Code checks if the user inputs enough money to purchase a product, 
+    # The minimum amount the user can input is the price of cheapest item on the list which in this case is 10 dhs.
+    if amount_credited < 10: 
+        print("\nAmount is insufficient\n\nNot Enough to Purchase an Item\n\nPlease Try Again")
+        print("\n--------------------------------------------------")
+        venMa_system()
+    
+    else: # Prompt to Enter Product Code
+        print("\n..................................................\n")
+        code_input = input("\nPlease Enter Product Code: ").upper()
+        print("\n..................................................")
+        inpt["item_code"]= code_input # 
+
+        # This if-else block checks to see if the code given by the user is in the menu_prices dictionary.
+        if code_input in items_info.keys(): 
+            prod_amount = items_info[code_input][0] # Fetches the amount of the product.
+            credit_update = inpt['credit'] - prod_amount  # Calculates the remaining credit after purchase has been COMPLETED.
+            
+            # DETAILS REGARDING PRODUCT CODE ENTERED - PRODUCT NAME, PRICE, and IF USER HAS ENOUGH MONEY TO PURCHASE CHOSEN ITEM
+            print("\nProduct: ", items_info[code_input][1],'\n\nCURRENT AMOUNT:', inpt['credit'],'\nPrice: ',prod_amount,'\n=',credit_update,'DHS')
+            print("..................................................")
+
+            if inpt['credit'] < prod_amount:
+                if inpt["purchase_times"] == 0: # If block will only run on the first purchase.
+                    print("\nAmount given is insufficient")
+
+                    # It allows user to choose whether to CHANGE or ADD TO the amount credited on the machine.
+                    start = input("\nWould You Like to [Change] or [Add] on the Amount Given or [Cancel]? ").lower()
+                    if start == "change":
+                        print("\nPlease collect your ", amount_credited, "DHS")
+                        time.sleep(2)
+                        venMa_system()
+                    if start == "add":
+                        add_amount = float(input("\nEnter Amount to Add to Credit: "))
+                        add_to_credit = inpt['credit'] + add_amount
+                        inpt['credit'] = add_to_credit
+                        print("\nCURRENT AMOUNT: ",inpt['credit'])
+                        purchase_process()
+                           
+                else: # Else block runs after first purchase and only allows user to change product code entered.
+                    print("\nYou Do Not Have Enough Credit to Purchase this Item")
+                    start1 = input("\nPick a Different Product? [YES/ (NO) CANCEL)] ").lower()
+                    if start1 == "yes":
+                        print("Please Wait")
+                        time.sleep(2)
+                        purchase_process()
+                    else:
+                        print("\n--------------------------------------------------")
+                        print("\nThank You for Using ART BOX\n--------------------------------------------------")
+                        print("\nTotal Amount Purchased: CANCELLED\nChange: ", inpt["credit"])
+                        print("\n--------------------------------------------------\n\nDon't forget to take your change\n")
+                        exit
+            else:
+                inpt['credit'] = credit_update
+                print("\nPurchase on Process")
+                time.sleep(3)
+                print("\nPlease Wait")
+                time.sleep(5)
+                print("\n..................................................\n\n---Please Take Your Purchase---")
+                if credit_update >= 10: # If user still has enough change to make another purchase.
+                    print("\nThere is still ", str(credit_update), "DHS inside the Machine")
+                    purchase_again = input("Would You Like to Purchase Another Item? [YES/NO(TO CANCEL)] ").lower()
+                    suggestions()
+                    if purchase_again == "yes":
+                        inpt["purchase_times"]= 1
+                        print("\nPlease Wait\n")
+                        time.sleep(5)
+                        purchase_process() 
+                    else:
+                        print("\n--------------------------------------------------\nTotal Amount Purchased: " , str(prod_amount))
+                        print("Change: ", credit_update,"\n--------------------------------------------------")
+                        print("\nDon't forget to take your change\n")
+                        exit
+                else:
+                    print("\n--------------------------------------------------\nTotal Amount Purchased: " , str(prod_amount))
+                    print("Change: ", credit_update,"\n--------------------------------------------------")
+                    if credit_update > 0:
+                        print("\nDon't forget to take your change\n")
+            
+        else: 
+          print("\nINVALID CODE\n\nProduct Does NOT Exist")
+          again2 = input("TRY AGAIN? [YES/NO(TO CANCEL)] ").lower()
+          if again2 == "yes":
+            purchase_process()
+          else: 
+            print("\nWhy Leave So Soon?","\n--------------------------------------------------\nTotal Amount Purchased: CANCELLED")
+            print("\nMoney Returned: ", inpt['credit'],"\n--------------------------------------------------")
+            exit    
+  purchase_process()
+venMa_system()
